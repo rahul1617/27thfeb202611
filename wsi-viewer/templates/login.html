@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Path-IQ — Login</title>
+    <meta name="description" content="Login to Path-IQ Clinical Diagnostic Platform" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/static/css/login.css" />
+</head>
+
+<body class="login-body">
+
+    <!-- Left side Branding -->
+    <div class="login-left">
+        <div class="login-left-content">
+            <div class="login-logo">
+                <svg width="42" height="42" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="100" height="100" rx="20" fill="#0084ff" />
+                    <rect x="19" y="27" width="11" height="11" fill="white" />
+                    <rect x="19" y="42" width="11" height="31" fill="white" />
+                    <circle cx="55" cy="50" r="17.5" stroke="white" stroke-width="11" />
+                    <rect x="68" y="65" width="11" height="11" fill="white" />
+                </svg>
+                <span class="login-brand-text">Path-IQ</span>
+            </div>
+
+            <h1 class="login-tagline">Clinical Diagnostic Platform</h1>
+            <p class="login-desc">
+                Accelerate diagnostic workflows with integrated whole slide imaging, AI-assisted pattern classification,
+                and secure lab communication.
+            </p>
+        </div>
+    </div>
+
+    <!-- Right side Form -->
+    <div class="login-right">
+        <div class="glass-sphere"></div>
+        <div class="login-box">
+            <div class="login-header">
+                <h2 class="login-title">Sign In</h2>
+                <p class="login-subtitle">Welcome back. Please select your role to continue.</p>
+            </div>
+
+            <!-- Role Tabs -->
+            <div class="login-tabs">
+                <div class="login-tab active" id="tabPathologist">Pathologist</div>
+                <div class="login-tab" id="tabHistolab">Histolab Technician</div>
+            </div>
+
+            <!-- Fake Login Form -->
+            <form action="/" method="GET" id="loginForm">
+
+                <div class="form-group">
+                    <label class="form-label" for="userId" id="userIdLabel">Provider ID / Email</label>
+                    <input type="text" class="form-input" id="userId" placeholder="Enter your ID or Email" required
+                        autofocus />
+                </div>
+
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" class="form-input" id="password" placeholder="••••••••" required />
+                </div>
+
+                <div class="form-actions">
+                    <label class="form-check">
+                        <input type="checkbox" id="rememberMe" checked>
+                        <span>Remember me for 30 days</span>
+                    </label>
+                    <a href="#" class="forgot-link">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">Access Vault</button>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const tabPathologist = document.getElementById('tabPathologist');
+        const tabHistolab = document.getElementById('tabHistolab');
+        const btn = document.getElementById('loginBtn');
+        const userIdLabel = document.getElementById('userIdLabel');
+
+        tabPathologist.addEventListener('click', () => {
+            tabPathologist.classList.add('active');
+            tabHistolab.classList.remove('active');
+            btn.textContent = 'Access Vault';
+            userIdLabel.textContent = 'Provider ID / Email';
+            document.getElementById('loginForm').action = '/';
+        });
+
+        tabHistolab.addEventListener('click', () => {
+            tabHistolab.classList.add('active');
+            tabPathologist.classList.remove('active');
+            btn.textContent = 'Enter Lab Console';
+            userIdLabel.textContent = 'Technician Badge ID';
+            document.getElementById('loginForm').action = '/histolab';
+        });
+
+    </script>
+</body>
+
+</html>

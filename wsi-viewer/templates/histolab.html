@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Path-IQ — HistoLab Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/static/css/histolab.css" />
+</head>
+
+<body class="histo-body">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="histo-sidebar">
+        <div class="histo-brand">
+            <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100" height="100" rx="20" fill="#0084ff" />
+                <rect x="19" y="27" width="11" height="11" fill="white" />
+                <rect x="19" y="42" width="11" height="31" fill="white" />
+                <circle cx="55" cy="50" r="17.5" stroke="white" stroke-width="11" />
+                <rect x="68" y="65" width="11" height="11" fill="white" />
+            </svg>
+            <span class="histo-brand-text">Path-IQ Lab</span>
+        </div>
+
+        <nav class="histo-nav">
+            <div class="nav-item active" data-target="view-dashboard">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                Dashboard
+            </div>
+            <div class="nav-item" data-target="view-new-sub">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12h14"></path>
+                </svg>
+                New Submission
+            </div>
+            <div class="nav-item" data-target="view-directory">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                Pathologist Network
+            </div>
+            <div class="nav-item" data-target="view-tracking">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                Active Cases
+            </div>
+        </nav>
+    </aside>
+
+    <!-- ── MAIN PANEL ── -->
+    <main class="histo-main">
+        <header class="histo-header">
+            <div class="header-title" id="mainHeaderTitle">Lab Dashboard</div>
+            <div class="header-actions">
+                <div class="user-profile">
+                    <div class="user-avatar">TK</div>
+                    <span>Tech. Kim</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD VIEW -->
+        <div class="view-container active" id="view-dashboard">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Today's Cases</div>
+                    <div class="stat-value">124</div>
+                    <div class="stat-desc">42 pending assignment</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-title">SLA Tracker</div>
+                    <div class="stat-value">8</div>
+                    <div class="stat-desc" style="color:var(--orange)">Due in < 2 hours</div>
+                    </div>
+                    <div class="stat-card alert">
+                        <div class="stat-title">QC Alerts</div>
+                        <div class="stat-value">3</div>
+                        <div class="stat-desc" style="color:var(--red)">Scan blur / artifact detected</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-title">Reported Today</div>
+                        <div class="stat-value">89</div>
+                        <div class="stat-desc" style="color:var(--emerald)">Avg Turnaround: 22h</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Recent Submissions</span>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Case ID</th>
+                                <th>Organ/Site</th>
+                                <th>Pathologist</th>
+                                <th>SLA / Priority</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge">C-2041</span></td>
+                                <td>Prostate Needle Biopsy</td>
+                                <td>Dr. Sarah Chen</td>
+                                <td><span style="color:var(--orange)">Due 14:00 (Rush)</span></td>
+                                <td><span class="badge orange">In Review</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge">C-2042</span></td>
+                                <td>Gastric Antrum</td>
+                                <td>Auto-Routing...</td>
+                                <td>Standard (48h)</td>
+                                <td><span class="badge blue">Uploaded</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge">C-2040</span></td>
+                                <td>Skin Excision</td>
+                                <td>Dr. James Wilson</td>
+                                <td>Standard (48h)</td>
+                                <td><span class="badge emerald">Reported</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- NEW SUBMISSION VIEW -->
+            <div class="view-container" id="view-new-sub">
+                <h2 style="margin-top:0; font-size:24px; font-weight:300;">Create Case <span
+                        style="color:var(--text-helper)">/ Upload Mode</span></h2>
+
+                <div class="split-layout">
+                    <!-- Case Builder Form -->
+                    <div class="form-panel panel">
+                        <h3 style="margin-top:0; font-size:16px;">Case Details</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Patient Pseudo-ID</label>
+                                <input type="text" class="form-input" placeholder="e.g. P-8831-X" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Accession Number</label>
+                                <input type="text" class="form-input" placeholder="e.g. SP26-1049" />
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Organ / Tissue Site</label>
+                                <select class="form-select">
+                                    <option>Breast</option>
+                                    <option>Prostate</option>
+                                    <option>GI Tract</option>
+                                    <option>Dermatopathology</option>
+                                    <option>Gynecologic</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Specimen Type</label>
+                                <select class="form-select">
+                                    <option>Core Needle Biopsy</option>
+                                    <option>Excision</option>
+                                    <option>Resection</option>
+                                    <option>Cytology</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Stain Set</label>
+                            <select class="form-select">
+                                <option>H&E Only</option>
+                                <option>H&E + IHC</option>
+                                <option>Special Stains</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Clinical History & Provisional Notes</label>
+                            <textarea class="form-input" rows="3"
+                                placeholder="Enter history, previous findings, or specific questions for the pathologist..."></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Priority</label>
+                                <select class="form-select">
+                                    <option>Standard (48h)</option>
+                                    <option>Rush (24h)</option>
+                                    <option>STAT (4h)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Service Type</label>
+                                <select class="form-select">
+                                    <option>Primary Read</option>
+                                    <option>Second Opinion / Consult</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Manager -->
+                    <div class="upload-panel panel">
+                        <h3 style="margin-top:0; font-size:16px;">Upload Manager</h3>
+                        <div class="drag-drop-zone" id="dzNewSub">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.5">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            <p>Drag & Drop WSI files here<br><span style="font-size:12px">Supports SVS, TIF, NDPI, MRXS
+                                    (Multi-file enabled)</span></p>
+                        </div>
+
+                        <!-- Fake upload preview (hidden initially) -->
+                        <div id="uploadPreview"
+                            style="display:none; margin-top:16px; border:1px solid var(--gray-70); border-radius:8px; padding:12px; background:var(--gray-80);">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                                <span style="font-size:13px; font-weight:600;">GTEX-1117F-0226.svs</span>
+                                <span class="badge blue">QC: Passed</span>
+                            </div>
+                            <div
+                                style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-helper); font-family:var(--font-mono);">
+                                <span>Aperio • 20x • H&E</span>
+                                <span>232.9 MB</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-footer">
+                    <button class="btn btn-primary" onclick="window.navTo('view-directory')">
+                        Next: Route to Pathologist
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- DIRECTORY / ROUTING VIEW -->
+            <div class="view-container" id="view-directory">
+                <h2 style="margin-top:0; font-size:24px; font-weight:300;">Pathologist Directory <span
+                        style="color:var(--text-helper)">/ Network</span></h2>
+
+                <div class="auto-route-banner">
+                    <div class="ar-info">
+                        <h4>Smart Auto-Route (Recommended)</h4>
+                        <p>Path-IQ engine automatically selects the best available pathologist based on organ, stain,
+                            SLA, and licensure region.</p>
+                    </div>
+                    <!-- Toggle -->
+                    <label class="switch">
+                        <input type="checkbox" id="autoRouteToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="directory-layout" id="dirLayout" style="opacity: 0.5; pointer-events:none;">
+                    <div class="filters-panel">
+                        <div class="filters-group">
+                            <div class="filter-title">Subspecialty</div>
+                            <label class="filter-check"><input type="checkbox"> Breast</label>
+                            <label class="filter-check"><input type="checkbox"> Gastrointestinal</label>
+                            <label class="filter-check"><input type="checkbox" checked> Dermatopathology</label>
+                            <label class="filter-check"><input type="checkbox"> Genitourinary</label>
+                            <label class="filter-check"><input type="checkbox"> Hematopathology</label>
+                        </div>
+                        <div class="filters-group">
+                            <div class="filter-title">Availability / SLA</div>
+                            <label class="filter-check"><input type="checkbox" checked> Online Now</label>
+                            <label class="filter-check"><input type="checkbox"> Accepts STAT (4h)</label>
+                            <label class="filter-check"><input type="checkbox"> Submits AI QA feedback</label>
+                        </div>
+                    </div>
+
+                    <div class="directory-grid">
+                        <!-- Path Card 1 -->
+                        <div class="pathologist-card">
+                            <div class="path-header">
+                                <div class="user-avatar" style="width:48px;height:48px;font-size:16px;">SC</div>
+                                <div class="path-info">
+                                    <h3>Dr. Sarah Chen</h3>
+                                    <p>California, USA • Available</p>
+                                </div>
+                            </div>
+                            <div class="path-tags">
+                                <span class="tag">GU</span>
+                                <span class="tag">Dermpath</span>
+                            </div>
+                            <div class="path-stats">
+                                <div class="path-stat-box">
+                                    <div class="ps-val">99%</div>
+                                    <div class="ps-label">QA Score</div>
+                                </div>
+                                <div class="path-stat-box">
+                                    <div class="ps-val">2.8h</div>
+                                    <div class="ps-label">Avg TAT</div>
+                                </div>
+                                <div class="path-stat-box">
+                                    <div class="ps-val">1.2k</div>
+                                    <div class="ps-label">Cases Vol</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary" onclick="window.navTo('view-tracking')">Manual
+                                Assign</button>
+                        </div>
+
+                        <!-- Path Card 2 -->
+                        <div class="pathologist-card">
+                            <div class="path-header">
+                                <div class="user-avatar"
+                                    style="width:48px;height:48px;font-size:16px;background:var(--purple)">MR</div>
+                                <div class="path-info">
+                                    <h3>Dr. Michael Rossi</h3>
+                                    <p>New York, USA • Available</p>
+                                </div>
+                            </div>
+                            <div class="path-tags">
+                                <span class="tag">Breast</span>
+                                <span class="tag">GI Path</span>
+                            </div>
+                            <div class="path-stats">
+                                <div class="path-stat-box">
+                                    <div class="ps-val">97%</div>
+                                    <div class="ps-label">QA Score</div>
+                                </div>
+                                <div class="path-stat-box">
+                                    <div class="ps-val">12h</div>
+                                    <div class="ps-label">Avg TAT</div>
+                                </div>
+                                <div class="path-stat-box">
+                                    <div class="ps-val">8k</div>
+                                    <div class="ps-label">Cases Vol</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary" onclick="window.navTo('view-tracking')">Manual
+                                Assign</button>
+                        </div>
+
+                        <!-- Path Card 3 -->
+                        <div class="pathologist-card">
+                            <div class="path-header">
+                                <div class="user-avatar"
+                                    style="width:48px;height:48px;font-size:16px;background:var(--emerald)">AY</div>
+                                <div class="path-info">
+                                    <h3>Dr. Aisha Yilmaz</h3>
+                                    <p>London, UK • Away (2h)</p>
+                                </div>
+                            </div>
+                            <div class="path-tags">
+                                <span class="tag">Neuropath</span>
+                                <span class="tag">Bone/Soft Tissue</span>
+                            </div>
+                            <div class="path-stats">
+                                <div class="path-stat-box">
+                                    <div class="ps-val">98%</div>
+                                    <div class="ps-label">QA Score</div>
+                                </div>
+                                <div class="path-stat-box">
+                                    <div class="ps-val">8h</div>
+                                    <div class="ps-label">Avg TAT</div>
+                                </div>
+                                <div class="path-stat-box">
+                                    <div class="ps-val">3.4k</div>
+                                    <div class="ps-label">Cases Vol</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary" disabled
+                                style="opacity:0.5; cursor:not-allowed;">Currently Unavailable</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-footer" id="arFooter">
+                    <button class="btn btn-primary" onclick="window.navTo('view-tracking')">
+                        Confirm Auto-Routing
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- TRACKING VIEW -->
+            <div class="view-container" id="view-tracking">
+                <h2 style="margin-top:0; font-size:24px; font-weight:300;">Case Tracking <span
+                        style="color:var(--text-helper)">/ C-2041</span></h2>
+
+                <div class="tracking-layout">
+                    <div class="timeline-panel">
+                        <h3 style="margin-top:0; font-size:16px; margin-bottom:24px;">Lifecycle Timeline</h3>
+                        <div class="timeline">
+                            <div class="tl-item done">
+                                <div class="tl-content">
+                                    <h4>Case Received & Uploaded</h4>
+                                    <p>Tech. Kim via Upload Manager</p>
+                                    <div class="tl-time">Today, 09:14 AM</div>
+                                </div>
+                            </div>
+                            <div class="tl-item done">
+                                <div class="tl-content">
+                                    <h4>AI Quality Control</h4>
+                                    <p>No major artifacts detected. Blur edge < 3%.</p>
+                                            <div class="tl-time">Today, 09:15 AM</div>
+                                </div>
+                            </div>
+                            <div class="tl-item done">
+                                <div class="tl-content">
+                                    <h4>Assigned to Pathologist</h4>
+                                    <p>Successfully routed to Dr. Sarah Chen.</p>
+                                    <div class="tl-time">Today, 09:15 AM</div>
+                                </div>
+                            </div>
+                            <div class="tl-item active">
+                                <div class="tl-content">
+                                    <h4>In Review</h4>
+                                    <p>Dr. Chen is currently analyzing slides with AI assistance.</p>
+                                    <div class="tl-time">Today, 09:42 AM</div>
+                                </div>
+                            </div>
+                            <div class="tl-item">
+                                <div class="tl-content">
+                                    <h4>Final Report Delivered</h4>
+                                    <p>Awaiting sign-off...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-panel">
+                        <div class="chat-header">
+                            <div class="user-avatar" style="width:36px;height:36px;">SC</div>
+                            <div>
+                                <div style="font-size:14px; font-weight:600;">Dr. Sarah Chen</div>
+                                <div style="font-size:11px; color:var(--emerald);">Online</div>
+                            </div>
+                        </div>
+
+                        <div class="chat-msgs">
+                            <div class="msg out">
+                                Hi Dr. Chen, I uploaded standard H&E cuts for C-2041. Did you want me to order IHC as
+                                well? It looked suspiciously like Gleason 4.
+                            </div>
+                            <div class="msg in">
+                                Yes, thank you. Please run P504S and High-molecular-weight cytokeratin for IHC
+                                validation. Standard priority is fine.
+                            </div>
+                            <div class="msg out">
+                                Ordered. The blocks are at the lab, I'll scan the IHCs and attach them to this case
+                                tomorrow morning.
+                            </div>
+                        </div>
+
+                        <div class="chat-input">
+                            <input type="text" placeholder="Type a message to the pathologist..." />
+                            <button><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg></button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+    </main>
+
+    <script>
+        // Fake drag drop toggle class
+        const dz = document.getElementById('dzNewSub');
+        const preview = document.getElementById('uploadPreview');
+        if (dz) {
+            dz.addEventListener('click', () => {
+                preview.style.display = 'block';
+                dz.style.minHeight = '140px';
+                dz.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><p style="margin:0">Add more slides</p>';
+            });
+        }
+
+        // Auto-Routing Toggle Logic
+        const arToggle = document.getElementById('autoRouteToggle');
+        const dirLayout = document.getElementById('dirLayout');
+        const arFooter = document.getElementById('arFooter');
+        if (arToggle) {
+            arToggle.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    dirLayout.style.opacity = '0.5';
+                    dirLayout.style.pointerEvents = 'none';
+                    arFooter.style.display = 'flex';
+                } else {
+                    dirLayout.style.opacity = '1';
+                    dirLayout.style.pointerEvents = 'auto';
+                    arFooter.style.display = 'none';
+                }
+            });
+        }
+
+        // SPA Navigation Logic
+        const navItems = document.querySelectorAll('.nav-item');
+        const views = document.querySelectorAll('.view-container');
+        const headerTitle = document.getElementById('mainHeaderTitle');
+
+        const viewTitles = {
+            'view-dashboard': 'Lab Dashboard',
+            'view-new-sub': 'New Submission',
+            'view-directory': 'Pathologist Network',
+            'view-tracking': 'Active Cases'
+        };
+
+        window.navTo = function (targetId) {
+            // Update nav active state
+            navItems.forEach(item => {
+                if (item.dataset.target === targetId) {
+                    item.classList.add('active');
+                    headerTitle.textContent = viewTitles[targetId];
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            // Update views
+            views.forEach(view => {
+                if (view.id === targetId) {
+                    view.classList.add('active');
+                } else {
+                    view.classList.remove('active');
+                }
+            });
+        };
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                window.navTo(item.dataset.target);
+            });
+        });
+    </script>
+</body>
+
+</html>

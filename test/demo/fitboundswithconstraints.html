@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OpenSeadragon fitBoundsWithConstraints() Demo</title>
+    <script type="text/javascript" src='../../build/openseadragon/openseadragon.js'></script>
+    <script type="text/javascript" src='../lib/jquery-1.9.1.min.js'></script>
+    <style type="text/css">
+
+      .openseadragon1 {
+          width: 800px;
+          height: 500px;
+          border:thin black solid;
+          margin-right:20px;
+      }
+      #buttons button{
+        width:10em;
+        text-align:center;
+        margin:5px;
+      }
+      .layout{
+        display:grid;
+        grid-template-columns:auto 1fr;
+        padding:10px;
+      }
+      .method{
+        border:medium gray solid;
+        margin:2px;
+        background-color:rgb(240, 240, 240)
+      }
+      .method.selected{
+        border:medium red solid;
+        background-color: lightgoldenrodyellow;
+      }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <div id="contentDiv" class="openseadragon1"></div>
+        <div id="controls">
+            <div>
+                Simple demo page to show viewport.fitBounds() with and without constraints. The viewer
+                is set up with visibilityRatio = 1 and constrainDuringPan = true to clearly demonstrate the
+                constraints.
+            </div>
+
+            <h3>Pick a method to use:</h3>
+            <div>
+                <div class="method selected" data-value="0">
+                    <pre>viewport.fitBounds(bounds); //Ignores constraints</pre>
+                </div>
+                <div class="method" data-value="1">
+                    <pre>viewport.fitBoundsWithConstraints(bounds);</pre>
+                </div>
+                <div class="method" data-value="4">
+                    <pre>viewport.fitBoundsWithConstraints(bounds, true); //immediate</pre>
+                </div>
+                <div class="method" data-value="2">
+                    <pre>//Initially ignore constraints
+viewport.fitBounds(bounds);
+
+//Apply constraints after 1 second delay
+setTimeout(() => viewport.applyConstraints(), 1000);</pre>
+                </div>
+            </div>
+            <button id="rotate">Rotate the viewer</button>
+            <h3>Click to fit overlay bounds:</h3>
+            <div id="buttons"></div>
+            <h4>overlay.getBounds(viewer.viewport):</h4>
+            <pre class="bounds">Pick an overlay above to show the bounds</pre>
+        </div>
+    </div>
+
+
+    <script type="text/javascript">
+
+        var viewer;
+        var _fittingMethod = 0;
+        viewer = window.viewer = OpenSeadragon({
+            id: "contentDiv",
+            prefixUrl: "../../build/openseadragon/images/",
+            tileSources: "../data/testpattern.dzi",
+            minZoomImageRatio: 0,
+            maxZoomPixelRatio: 10,
+            visibilityRatio:1,
+            constrainDuringPan:true,
+        });
+
+        viewer.addHandler("open", function(event) {
+            var elt = document.createElement("div");
+            elt.className = "runtime-overlay";
+            elt.style.background = "green";
+            elt.style.outline = "3px solid red";
+            elt.style.opacity = "0.7";
+            elt.textContent = "Within the image";
+            viewer.addOverlay({
+                element: elt,
+                location: new OpenSeadragon.Rect(0.21, 0.21, 0.099, 0.299),
+                rotationMode: OpenSeadragon.OverlayRotationMode.BOUNDING_BOX
+            });
+
+            elt = document.createElement("div");
+            elt.className = "runtime-overlay";
+            elt.style.background = "white";
+            elt.style.opacity = "0.5";
+            elt.style.outline = "5px solid pink";
+            elt.textContent = "Left edge rectangle";
+            viewer.addOverlay({
+                element: elt,
+                location: new OpenSeadragon.Rect(-0.4, 0.7, 0.7, 0.15)
+            });
+
+            var elt = document.createElement("div");
+            elt.className = "runtime-overlay";
+            elt.style.background = "lightblue";
+            elt.style.outline = "3px solid purple";
+            elt.style.opacity = "0.7";
+            elt.textContent = "Top right square";
+            viewer.addOverlay({
+                element: elt,
+                location: new OpenSeadragon.Rect(0.9, -0.1, 0.2, 0.2),
+                rotationMode: OpenSeadragon.OverlayRotationMode.BOUNDING_BOX
+            });
+
+            viewer.currentOverlays.forEach(overlay=>{
+                var text = $(overlay.element).text();
+                var div=$('<div>').appendTo('#buttons');
+                var buttons=$('<button>').text(text).appendTo(div).on('click',()=>{
+
+                    var bounds = overlay.getBounds(viewer.viewport);
+                    $('.bounds').text(JSON.stringify(bounds,null,2));
+
+                    var _fittingMethod = parseInt($('.method.selected').data('value'));
+
+                    if (_fittingMethod === 0) {
+                        viewer.viewport.fitBounds(bounds, false);
+                    }
+                    else if (_fittingMethod === 1) {
+                        viewer.viewport.fitBoundsWithConstraints(bounds, false);
+                    }
+                    else if (_fittingMethod === 4) {
+                        viewer.viewport.fitBoundsWithConstraints(bounds, true);
+                    }
+                    else if (_fittingMethod === 2) {
+                        viewer.viewport.fitBounds(bounds, false);
+                        setTimeout(()=>viewer.viewport.applyConstraints(), 1000);
+                    }
+                });
+            })
+
+            viewer.viewport.zoomTo(0.5, null, true);
+
+
+        });
+        $('.method').on('click',function(){
+            $('.method').removeClass('selected');
+            $(this).addClass('selected');
+        })
+        $("#rotate").click(function() {
+            viewer.viewport.setRotation(viewer.viewport.getRotation() - 22.5);
+            $("#degrees").text(viewer.viewport.getRotation() + "deg");
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Path-IQ — Clinical Diagnostic Platform</title>
+    <meta name="description"
+        content="Whole slide image viewer with AI diagnostics, evidence management, reporting studio and lab communication." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/openseadragon@4.1/build/openseadragon/openseadragon.min.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+
+<body>
+
+    <!-- ══════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════ -->
+
+    <!-- Top App Bar -->
+    <nav class="app-nav" id="appNav">
+        <div class="app-nav-logo">
+            <svg width="26" height="26" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100" height="100" fill="#0084ff" />
+                <rect x="19" y="27" width="11" height="11" fill="white" />
+                <rect x="19" y="42" width="11" height="31" fill="white" />
+                <circle cx="55" cy="50" r="17.5" stroke="white" stroke-width="11" />
+                <rect x="68" y="65" width="11" height="11" fill="white" />
+            </svg>
+            <span class="app-nav-brand">Path-IQ</span>
+        </div>
+
+        <div class="app-nav-tabs">
+            <button class="nav-tab active" id="tabViewer" data-view="viewer">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                </svg>
+                WSI Viewer
+            </button>
+            <button class="nav-tab" id="tabEvidence" data-view="evidence">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                Evidence Pack
+                <span class="nav-badge" id="evidenceBadge">0</span>
+            </button>
+            <button class="nav-tab" id="tabReport" data-view="report">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                Reporting Studio
+            </button>
+            <button class="nav-tab" id="tabLab" data-view="lab">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                </svg>
+                Lab Comms
+                <span class="nav-badge urgent" id="labBadge">2</span>
+            </button>
+        </div>
+
+        <div class="app-nav-right">
+            <div class="case-badge">CASE C-2041 · H&E Slide 1</div>
+            <div class="user-avatar">DR</div>
+        </div>
+    </nav>
+
+    <!-- ══════════════════════════════════════
+     VIEW: WSI VIEWER (Feature 3)
+══════════════════════════════════════ -->
+    <div class="view active" id="viewViewer">
+        <div class="viewer-layout">
+
+            <!-- Upload Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <span class="sidebar-title">Slides</span>
+                    <button class="icon-btn" id="refreshBtn" title="Refresh">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <polyline points="23 4 23 10 17 10" />
+                            <polyline points="1 20 1 14 7 14" />
+                            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Upload Zone -->
+                <div class="upload-zone" id="uploadZone">
+                    <input type="file" id="fileInput" accept=".svs,.tif,.tiff,.ndpi,.vms,.vmu,.scn,.mrxs,.bif" hidden />
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.5">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    <p class="upload-label">Drop .svs here or <span id="uploadLink">browse</span></p>
+                    <p class="upload-formats">SVS · TIF · NDPI · MRXS</p>
+                </div>
+
+                <!-- Upload Progress -->
+                <div class="upload-progress hidden" id="uploadProgress">
+                    <div class="progress-row"><span id="progressFilename" class="mono">Uploading…</span><span
+                            id="progressPct">0%</span></div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p id="progressStatus" class="progress-status">Uploading…</p>
+                </div>
+
+                <!-- Slide List -->
+                <div class="slide-list" id="slideList">
+                    <div class="empty-state">No slides yet</div>
+                </div>
+
+                <!-- Slide Metadata -->
+                <div class="meta-panel hidden" id="metaPanel">
+                    <div class="meta-title">Slide Info</div>
+                    <div id="metaGrid" class="meta-grid"></div>
+                </div>
+            </aside>
+
+            <!-- Left Tool Panel -->
+
+
+            <!-- Viewer Core -->
+            <div class="viewer-core">
+                <!-- Topbar -->
+                <div class="viewer-topbar">
+                    <div class="topbar-left">
+                        <span class="case-label">CASE C-2041 &rarr; H&amp;E Slide 1</span>
+                        <span class="mag-label" id="magLabel">Magnification 20&times; | Overlay OFF</span>
+                        <div class="topbar-sep"></div>
+                        <button class="snap-hero-btn" id="btnSnapHero" title="Snapshot current view (S)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                                <circle cx="12" cy="13" r="4" />
+                            </svg>
+                            Snapshot
+                        </button>
+                        <button class="imm-hero-btn" id="btnImmersive" title="Immersive Fullscreen (I)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3" />
+                            </svg>
+                            Immersive
+                        </button>
+                    </div>
+                    <div class="topbar-center">
+                        <div class="zoom-display">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.35-4.35" />
+                            </svg>
+                            <span id="zoomLevel">1.0×</span>
+                        </div>
+                        <button class="tb-btn" id="btnZoomIn" title="Zoom In (+)"><svg width="14" height="14"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.35-4.35M11 8v6M8 11h6" />
+                            </svg></button>
+                        <button class="tb-btn" id="btnZoomOut" title="Zoom Out (-)"><svg width="14" height="14"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.35-4.35M8 11h6" />
+                            </svg></button>
+                        <button class="tb-btn" id="btnHome" title="Fit"><svg width="14" height="14" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m3 9 9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                                <polyline points="9 22 9 12 15 12 15 22" />
+                            </svg></button>
+                        <div class="tb-sep"></div>
+                        <button class="tb-btn toggle-btn" id="btnCompare" title="Compare Slides">Compare</button>
+                        <button class="tb-btn toggle-btn" id="btnHeatmapTop" title="Heatmap Toggle">Heatmap</button>
+                        <button class="tb-btn" id="btnReset" title="Reset View">Reset</button>
+                        <div class="tb-sep"></div>
+                        <label class="auto-snap-toggle" title="Auto-capture viewport on annotation save">
+                            <input type="checkbox" id="autoSnapToggle" />
+                            <span class="auto-snap-label">Auto-Snap</span>
+                        </label>
+                    </div>
+
+                    <div class="topbar-right">
+                        <button class="tb-btn" id="btnFullscreen" title="Browser Fullscreen">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="15 3 21 3 21 9" />
+                                <polyline points="9 21 3 21 3 15" />
+                                <line x1="21" y1="3" x2="14" y2="10" />
+                                <line x1="3" y1="21" x2="10" y2="14" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ══ IMMERSIVE FULLSCREEN OVERLAY ══ -->
+                <div class="immersive-overlay hidden" id="immersiveOverlay">
+
+                    <!-- Floating top HUD -->
+                    <div class="imm-hud" id="immHud">
+                        <div class="imm-hud-left">
+                            <div class="imm-logo">
+                                <svg width="18" height="18" viewBox="0 0 100 100" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="100" height="100" fill="#0084ff" />
+                                    <rect x="19" y="27" width="11" height="11" fill="white" />
+                                    <rect x="19" y="42" width="11" height="31" fill="white" />
+                                    <circle cx="55" cy="50" r="17.5" stroke="white" stroke-width="11" />
+                                    <rect x="68" y="65" width="11" height="11" fill="white" />
+                                </svg>
+                            </div>
+                            <span class="imm-case">CASE C-2041 · H&amp;E Slide 1</span>
+                            <div class="imm-sep"></div>
+                            <span class="imm-zoom" id="immZoomLabel">1.0×</span>
+                            <span class="imm-mag" id="immMagLabel">20×</span>
+                        </div>
+                        <div class="imm-hud-center">
+                            <!-- Core Annotation Tools -->
+                            <div
+                                style="display: flex; gap: 4px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 8px; margin-right: 8px;">
+                                <button class="imm-tool active" data-tool="pan" title="Pan (P)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3" />
+                                    </svg>
+                                </button>
+                                <button class="imm-tool" data-tool="roi" title="Rectangle ROI (R)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                                    </svg>
+                                </button>
+                                <button class="imm-tool" data-tool="polygon" title="Polygon ROI (G)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <polygon points="12,3 21,9 17,21 7,21 3,9" />
+                                    </svg>
+                                </button>
+                                <button class="imm-tool" data-tool="freehand" title="Freehand (F)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" />
+                                    </svg>
+                                </button>
+                                <button class="imm-tool" data-tool="label" title="Point Marker (L)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                        <circle cx="12" cy="10" r="3" />
+                                    </svg>
+                                </button>
+                                <button class="imm-tool" data-tool="measure" title="Measurement (M)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M2 12h20M12 2v2M12 20v2M6 6l2 2M16 16l2 2" />
+                                    </svg>
+                                </button>
+                                <button class="imm-tool" data-tool="ruler" title="Ruler">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <polyline points="3,21 9,9 15,15 21,3" />
+                                        <circle cx="9" cy="9" r="1.5" fill="currentColor" />
+                                        <circle cx="15" cy="15" r="1.5" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <button class="imm-tool" data-tool="area" title="Area Calculate">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <rect x="4" y="4" width="16" height="16" rx="2" stroke-dasharray="4,4" />
+                                        <circle cx="12" cy="12" r="2" fill="currentColor" />
+                                    </svg>
+                                </button>
+                            </div>
+
+
+                            <button class="imm-tb-btn toggle-btn" id="immBtnHeatmap"
+                                title="Heatmap (H)">Heatmap</button>
+                            <label class="imm-auto-snap" title="Auto-Snap on annotation save">
+                                <input type="checkbox" id="immAutoSnapToggle" />
+                                <span>Auto-Snap</span>
+                            </label>
+                            <div class="imm-sep"></div>
+                            <button class="imm-tb-btn" id="immBtnZoomIn" title="Zoom In (+)">+</button>
+                            <button class="imm-tb-btn" id="immBtnZoomOut" title="Zoom Out (-)">−</button>
+                            <button class="imm-tb-btn" id="immBtnFit" title="Fit">⊡</button>
+                        </div>
+                        <div class="imm-hud-right">
+                            <button class="imm-snap-btn" id="immBtnSnap" title="Snapshot (S)">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                                    <circle cx="12" cy="13" r="4" />
+                                </svg>
+                                Snapshot
+                            </button>
+                            <button class="imm-exit-btn" id="immExitBtn" title="Exit Immersive (Esc / I)">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="4 14 10 14 10 20" />
+                                    <polyline points="20 10 14 10 14 4" />
+                                    <line x1="10" y1="14" x2="21" y2="3" />
+                                    <line x1="3" y1="21" x2="14" y2="10" />
+                                </svg>
+                                Exit
+                            </button>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Floating AI insight strip (bottom right) -->
+                    <div class="imm-ai-strip" id="immAiStrip">
+                        <div class="imm-ai-row">
+                            <span class="imm-ai-label">Adenocarcinoma G2</span>
+                            <span class="imm-ai-conf high">94%</span>
+                        </div>
+                        <div class="imm-ai-row">
+                            <span class="imm-ai-label">Gleason 3+4</span>
+                            <span class="imm-ai-conf medium">81%</span>
+                        </div>
+                        <div class="imm-ai-row">
+                            <span class="imm-ai-label">IDC-P suspected</span>
+                            <span class="imm-ai-conf low">52%</span>
+                        </div>
+                        <div class="imm-ai-hint">AI assists. Pathologist signs.</div>
+                    </div>
+
+                    <!-- Coords overlay -->
+                    <div class="imm-coords" id="immCoords">x: 0 · y: 0</div>
+
+                    <!-- Annotation mini-toolbar (inside immersive) -->
+                    <div class="annot-mini-toolbar hidden" id="immAnnotMiniToolbar">
+                        <div class="amt-row">
+                            <span class="amt-label">Label</span>
+                            <select class="amt-select" id="immAnnotLabel">
+                                <option>Tumor</option>
+                                <option>Invasion</option>
+                                <option>Necrosis</option>
+                                <option>Margin</option>
+                                <option>LVI</option>
+                                <option>Artifact</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="amt-row">
+                            <span class="amt-label">Severity</span>
+                            <select class="amt-select" id="immAnnotSeverity">
+                                <option>High</option>
+                                <option>Medium</option>
+                                <option>Low</option>
+                            </select>
+                        </div>
+                        <div class="amt-row">
+                            <span class="amt-label">Notes</span>
+                            <input class="amt-input" id="immAnnotNotes" placeholder="Optional note…" />
+                        </div>
+                        <div class="amt-actions">
+                            <button class="amt-btn save" id="immAnnotSaveBtn">Save</button>
+                            <button class="amt-btn cancel" id="immAnnotCancelBtn">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Snapshot dialog (inside immersive) -->
+                    <div class="snapshot-dialog hidden" id="immSnapshotDialog">
+                        <div class="sd-header">
+                            <span>Snapshot Preview</span>
+                            <button class="sd-expand-btn" id="immSnapExpandBtn" title="Toggle Fullscreen">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="sd-toolbar" id="immSnapToolbar">
+                            <button class="sd-tool-btn active" data-snaptool="freehand" title="Freehand">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" data-snaptool="rect" title="Rectangle">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" data-snaptool="polygon" title="Polygon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polygon points="12,3 21,9 17,21 7,21 3,9" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" data-snaptool="point" title="Point Marker">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" data-snaptool="measure" title="Measurement">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M2 12h20M12 2v2M12 20v2M6 6l2 2M16 16l2 2" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" data-snaptool="ruler" title="Ruler">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="3,21 9,9 15,15 21,3" />
+                                    <circle cx="9" cy="9" r="1.5" fill="currentColor" />
+                                    <circle cx="15" cy="15" r="1.5" fill="currentColor" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" data-snaptool="area" title="Area Calculate">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="4" y="4" width="16" height="16" rx="2" stroke-dasharray="4,4" />
+                                    <circle cx="12" cy="12" r="2" fill="currentColor" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" data-snaptool="arrow" title="Arrow">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                            <div class="sd-sep"></div>
+                            <input type="color" class="sd-color" id="immSnapColor" value="#ef4444" title="Color" />
+                            <div class="sd-sep"></div>
+                            <button class="sd-tool-btn" id="immSnapUndoBtn" title="Undo">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M3 7v6h6M3 13a9 9 0 109-9" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" id="immSnapClearBtn" title="Clear All">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" />
+                                </svg>
+                            </button>
+                        </div>
+                        <canvas class="sd-canvas" id="immSnapshotCanvas" width="420" height="240"></canvas>
+                        <div class="sd-opts">
+                            <label class="sd-check"><input type="checkbox" checked id="immSnapAnnots" /> Include
+                                Annotations</label>
+                            <label class="sd-check"><input type="checkbox" checked id="immSnapAI" /> Include AI
+                                Overlay</label>
+                        </div>
+                        <div class="sd-caption-row">
+                            <input class="sd-caption" id="immSnapCaption" placeholder="Caption…" />
+                        </div>
+                        <div class="sd-actions">
+                            <button class="sd-btn primary" id="immSnapSaveBtn">Save to Evidence</button>
+                            <button class="sd-btn" id="immSnapCancelBtn">Cancel</button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="osd-area" id="osdArea">
+                    <div class="viewer-placeholder" id="viewerPlaceholder">
+                        <div class="ph-inner">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="0.7">
+                                <path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <circle cx="10" cy="13" r="2" />
+                                <path d="m20 17-1.09-1.09a2 2 0 00-2.82 0L10 22" />
+                            </svg>
+                            <h2>No Slide Loaded</h2>
+                            <p>Upload a .svs or .tif file using the sidebar, or drag & drop a file anywhere.</p>
+                            <button class="btn-primary" id="placeholderUploadBtn">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                    <polyline points="17 8 12 3 7 8" />
+                                    <line x1="12" y1="3" x2="12" y2="15" />
+                                </svg>
+                                Upload Slide
+                            </button>
+                        </div>
+                    </div>
+                    <div id="osdViewer" class="osd-viewer"></div>
+
+                    <!-- Heatmap overlay (simulated) -->
+                    <canvas id="heatmapCanvas" class="heatmap-canvas hidden"></canvas>
+
+                    <!-- Freehand canvas -->
+                    <canvas id="annotCanvas" class="annot-canvas"></canvas>
+
+                    <!-- Cell counter dots layer -->
+                    <div id="cellLayer" class="cell-layer"></div>
+
+                    <!-- Coordinates -->
+                    <div class="coords-bar" id="coordsBar">x: 0 · y: 0</div>
+
+                    <!-- Scale bar -->
+                    <div class="scale-bar hidden" id="scaleBar">
+                        <div class="scale-line" id="scaleBarLine"></div>
+                        <span id="scaleBarLabel"></span>
+                    </div>
+
+                    <!-- Minimap -->
+                    <div class="minimap" id="minimap">
+                        <canvas id="minimapCanvas" width="160" height="110"></canvas>
+                    </div>
+
+                    <!-- Cell counter floating panel -->
+                    <div class="cell-panel hidden" id="cellPanel">
+                        <div class="cell-panel-header">
+                            <span>Cell Counter</span>
+                            <button id="clearCells" class="cell-clear">Clear</button>
+                        </div>
+                        <div class="cell-count-display"><span id="cellCountNum">0</span> cells marked</div>
+                        <div class="cell-types">
+                            <button class="cell-type active" data-type="tumor" style="--c:#f43f5e">Tumor</button>
+                            <button class="cell-type" data-type="immune" style="--c:#06b6d4">Immune</button>
+                            <button class="cell-type" data-type="stroma" style="--c:#10b981">Stroma</button>
+                        </div>
+                    </div>
+
+                    <!-- Measure floating display -->
+                    <div class="measure-display hidden" id="measureDisplay">
+                        <span id="measureValue">—</span>
+                    </div>
+
+                    <!-- Annotation mini-toolbar (appears after drawing) -->
+                    <div class="annot-mini-toolbar hidden" id="annotMiniToolbar">
+                        <div class="amt-row">
+                            <label class="amt-label">Label</label>
+                            <select class="amt-select" id="annotLabel">
+                                <option value="Tumor">Tumor</option>
+                                <option value="Invasion">Invasion</option>
+                                <option value="Necrosis">Necrosis</option>
+                                <option value="Margin">Margin</option>
+                                <option value="LVI">Lymphovascular invasion</option>
+                                <option value="Artifact">Artifact</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="amt-row">
+                            <label class="amt-label">Severity</label>
+                            <select class="amt-select" id="annotSeverity">
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </div>
+                        <div class="amt-row">
+                            <label class="amt-label">Notes</label>
+                            <input class="amt-input" id="annotNotes" type="text" placeholder="Optional note…" />
+                        </div>
+                        <div class="amt-actions">
+                            <button class="amt-btn save" id="annotSaveBtn">Save</button>
+                            <button class="amt-btn cancel" id="annotCancelBtn">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Snapshot Dialog -->
+                    <div class="snapshot-dialog hidden" id="snapshotDialog">
+                        <div class="sd-header">
+                            <span>Snapshot Preview</span>
+                            <button class="sd-expand-btn" id="snapExpandBtn" title="Toggle Fullscreen">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="sd-toolbar" id="snapToolbar">
+                            <button class="sd-tool-btn active" data-snaptool="freehand" title="Freehand">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" data-snaptool="rect" title="Rectangle">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" data-snaptool="polygon" title="Polygon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polygon points="12,3 21,9 17,21 7,21 3,9" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" data-snaptool="point" title="Point Marker">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" data-snaptool="measure" title="Measurement">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M2 12h20M12 2v2M12 20v2M6 6l2 2M16 16l2 2" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" data-snaptool="ruler" title="Ruler">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="3,21 9,9 15,15 21,3" />
+                                    <circle cx="9" cy="9" r="1.5" fill="currentColor" />
+                                    <circle cx="15" cy="15" r="1.5" fill="currentColor" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" data-snaptool="area" title="Area Calculate">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="4" y="4" width="16" height="16" rx="2" stroke-dasharray="4,4" />
+                                    <circle cx="12" cy="12" r="2" fill="currentColor" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" data-snaptool="arrow" title="Arrow">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                            <div class="sd-sep"></div>
+                            <input type="color" class="sd-color" id="snapColor" value="#ef4444" title="Color" />
+                            <div class="sd-sep"></div>
+                            <button class="sd-tool-btn" id="snapUndoBtn" title="Undo">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M3 7v6h6M3 13a9 9 0 109-9" />
+                                </svg>
+                            </button>
+                            <button class="sd-tool-btn" id="snapClearBtn" title="Clear All">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" />
+                                </svg>
+                            </button>
+                        </div>
+                        <canvas class="sd-canvas" id="snapshotPreviewCanvas" width="420" height="240"></canvas>
+                        <div class="sd-opts">
+                            <label class="sd-check"><input type="checkbox" id="snapIncludeAnnot" checked /> Include
+                                Annotations</label>
+                            <label class="sd-check"><input type="checkbox" id="snapIncludeAI" checked /> Include AI
+                                Overlay</label>
+                        </div>
+                        <div class="sd-caption-row">
+                            <input class="sd-caption" id="snapCaption" type="text" placeholder="Caption…" />
+                        </div>
+                        <div class="sd-actions">
+                            <button class="sd-btn primary" id="snapSaveBtn">Save to Evidence</button>
+                            <button class="sd-btn" id="snapCancelBtn">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Toast -->
+                    <div class="toast hidden" id="toast"><span id="toastMsg"></span></div>
+                </div>
+
+                <!-- Bottom Strip -->
+                <div class="bottom-strip" id="bottomStrip">
+                    <div class="strip-section">
+                        <span class="strip-label">Slide Thumbnails</span>
+                        <div class="thumb-strip" id="thumbStrip">
+                            <div class="thumb-empty">No slides</div>
+                        </div>
+                    </div>
+                    <div class="strip-divider"></div>
+                    <div class="strip-section">
+                        <span class="strip-label">Quick Evidence Save</span>
+                        <button class="strip-btn" id="quickSaveBtn">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                                <polyline points="17 21 17 13 7 13 7 21" />
+                                <polyline points="7 3 7 8 15 8" />
+                            </svg>
+                            Save Evidence
+                        </button>
+                    </div>
+                    <div class="strip-divider"></div>
+                    <div class="strip-section">
+                        <span class="strip-label">Annotation History</span>
+                        <div class="annot-history" id="annotHistory">
+                            <span class="ah-empty">No annotations</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right AI Insight Panel -->
+            <div class="ai-panel" id="aiPanel">
+                <div class="ai-panel-header">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2a2 2 0 012 2v2a2 2 0 01-2 2 2 2 0 01-2-2V4a2 2 0 012-2z" />
+                        <path d="M12 16a2 2 0 012 2v2a2 2 0 01-2 2 2 2 0 01-2-2v-2a2 2 0 012-2z" />
+                        <path d="M2 12a2 2 0 012-2h2a2 2 0 012 2 2 2 0 01-2 2H4a2 2 0 01-2-2z" />
+                        <path d="M16 12a2 2 0 012-2h2a2 2 0 012 2 2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    AI Insight Panel
+                </div>
+
+                <!-- Tumor Heatmap Toggle -->
+                <div class="ai-section">
+                    <div class="ai-section-label">Tumor Heatmap</div>
+                    <div class="ai-row">
+                        <span class="ai-key">Overlay</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="heatmapToggle" />
+                            <span class="toggle-track"></span>
+                        </label>
+                    </div>
+                    <div class="heatmap-legend">
+                        <div class="legend-bar"></div>
+                        <div class="legend-labels"><span>Low</span><span>High</span></div>
+                    </div>
+                </div>
+
+                <!-- Hotspot Navigator -->
+                <div class="ai-section">
+                    <div class="ai-section-label">Hotspot Navigator</div>
+                    <div class="hotspot-list">
+                        <button class="hotspot-item" data-idx="1">
+                            <div class="hotspot-dot" style="background:#f43f5e"></div>
+                            <div class="hotspot-info"><span class="hotspot-label">ROI 1 — Tumor Core</span><span
+                                    class="hotspot-conf">Conf: 94%</span></div>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+                        <button class="hotspot-item" data-idx="2">
+                            <div class="hotspot-dot" style="background:#f59e0b"></div>
+                            <div class="hotspot-info"><span class="hotspot-label">ROI 2 — Invasion Front</span><span
+                                    class="hotspot-conf">Conf: 81%</span></div>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+                        <button class="hotspot-item" data-idx="3">
+                            <div class="hotspot-dot" style="background:#06b6d4"></div>
+                            <div class="hotspot-info"><span class="hotspot-label">ROI 3 — Immune Infiltrate</span><span
+                                    class="hotspot-conf">Conf: 73%</span></div>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Artifact Detection -->
+                <div class="ai-section">
+                    <div class="ai-section-label">Artifact Detection</div>
+                    <div class="artifact-row ok">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        <span>No folding detected</span>
+                    </div>
+                    <div class="artifact-row warn">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path
+                                d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                        <span>Minor blur — edge (3%)</span>
+                    </div>
+                    <div class="artifact-row ok">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        <span>No air bubbles</span>
+                    </div>
+                </div>
+
+                <!-- Cell Density Stats -->
+                <div class="ai-section">
+                    <div class="ai-section-label">Cell Density Stats</div>
+                    <div class="density-stat">
+                        <div class="stat-row"><span class="stat-label">Tumor cells/mm²</span><span
+                                class="stat-val accent">2,847</span></div>
+                        <div class="stat-bar-track">
+                            <div class="stat-bar-fill" style="width:72%;background:var(--rose)"></div>
+                        </div>
+                    </div>
+                    <div class="density-stat">
+                        <div class="stat-row"><span class="stat-label">Immune cells/mm²</span><span
+                                class="stat-val">1,203</span></div>
+                        <div class="stat-bar-track">
+                            <div class="stat-bar-fill" style="width:38%;background:var(--cyan)"></div>
+                        </div>
+                    </div>
+                    <div class="density-stat">
+                        <div class="stat-row"><span class="stat-label">Stroma ratio</span><span
+                                class="stat-val">28%</span></div>
+                        <div class="stat-bar-track">
+                            <div class="stat-bar-fill" style="width:28%;background:var(--emerald)"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pattern Classification -->
+                <div class="ai-section">
+                    <div class="ai-section-label">Pattern Classification</div>
+                    <div class="pattern-result">
+                        <div class="pattern-top">
+                            <span class="pattern-label">Adenocarcinoma G2</span>
+                            <span class="conf-badge high">94%</span>
+                        </div>
+                        <div class="pattern-top" style="margin-top:6px">
+                            <span class="pattern-label secondary">Gleason 3+4</span>
+                            <span class="conf-badge med">81%</span>
+                        </div>
+                        <div class="pattern-top" style="margin-top:6px">
+                            <span class="pattern-label secondary">IDC-P suspected</span>
+                            <span class="conf-badge low">52%</span>
+                        </div>
+                    </div>
+                    <p class="ai-disclaimer">AI assists. Pathologist signs.</p>
+                </div>
+            </div>
+
+        </div><!-- /viewer-layout -->
+    </div><!-- /viewViewer -->
+
+
+    <!-- ══════════════════════════════════════
+     VIEW: EVIDENCE PACK (Feature 4)
+══════════════════════════════════════ -->
+    <div class="view" id="viewEvidence">
+        <div class="page-layout">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Evidence Pack</h1>
+                    <p class="page-sub">Diagnostic Memory Vault — structured proof, not screenshots</p>
+                </div>
+                <div class="page-actions">
+                    <button class="btn-ghost" id="exportEvidenceBtn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        Export Pack
+                    </button>
+                    <button class="btn-ghost" id="insertAllBtn">Insert All to Report</button>
+                </div>
+            </div>
+
+            <div class="evidence-grid" id="evidenceGrid">
+                <div class="evidence-empty" id="evidenceEmpty">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="0.8">
+                        <path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" />
+                        <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                    <p>No evidence captured yet.</p>
+                    <p class="ev-sub">Use the Snapshot tool in the WSI viewer to capture evidence.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+     VIEW: REPORTING STUDIO (Feature 5)
+══════════════════════════════════════ -->
+    <div class="view" id="viewReport">
+        <div class="report-layout">
+
+            <!-- Left Panel: Templates & References -->
+            <aside class="report-left">
+                <div class="rp-section-label">Templates</div>
+                <div class="template-list">
+                    <button class="template-item active" data-tpl="adenocarcinoma">Adenocarcinoma</button>
+                    <button class="template-item" data-tpl="squamous">Squamous Cell Ca.</button>
+                    <button class="template-item" data-tpl="lymphoma">Lymphoma</button>
+                    <button class="template-item" data-tpl="melanoma">Melanoma</button>
+                    <button class="template-item" data-tpl="gist">GIST</button>
+                    <button class="template-item" data-tpl="custom">Custom…</button>
+                </div>
+
+                <div class="rp-section-label" style="margin-top:16px">Grading Guides</div>
+                <div class="guide-list">
+                    <button class="guide-item">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" />
+                        </svg>
+                        Gleason Grading
+                    </button>
+                    <button class="guide-item">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" />
+                        </svg>
+                        WHO 2022 Grading
+                    </button>
+                    <button class="guide-item">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" />
+                        </svg>
+                        Nottingham Score
+                    </button>
+                </div>
+
+                <div class="rp-section-label" style="margin-top:16px">Biomarker References</div>
+                <div class="biomarker-list">
+                    <div class="biomarker-item">
+                        <span class="bm-name">ER/PR Status</span>
+                        <span class="bm-val pos">POS</span>
+                    </div>
+                    <div class="biomarker-item">
+                        <span class="bm-name">HER2</span>
+                        <span class="bm-val neg">NEG</span>
+                    </div>
+                    <div class="biomarker-item">
+                        <span class="bm-name">Ki-67</span>
+                        <span class="bm-val pending">PEND</span>
+                    </div>
+                    <div class="biomarker-item">
+                        <span class="bm-name">PD-L1 TPS</span>
+                        <span class="bm-val pos">42%</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center: Report Editor -->
+            <div class="report-center">
+                <div class="report-center-header">
+                    <div class="auto-save-indicator" id="autoSaveIndicator">
+                        <div class="save-dot pulse"></div>
+                        <span>Auto-saved 12s ago</span>
+                    </div>
+                    <div class="report-meta-row">
+                        <span class="report-meta-item">Case: <strong>C-2041</strong></span>
+                        <span class="report-meta-item">Patient: <strong>DOE, JOHN</strong></span>
+                        <span class="report-meta-item">DOB: <strong>1962-04-11</strong></span>
+                        <span class="report-meta-item">Pathologist: <strong>Dr. R. Singh</strong></span>
+                    </div>
+                </div>
+
+                <div class="report-editor">
+                    <!-- Structured fields -->
+                    <div class="report-section-header">Structured Diagnosis</div>
+                    <div class="struct-fields">
+                        <div class="field-row">
+                            <label>Specimen Type</label>
+                            <select class="report-select" id="specimenType">
+                                <option>Core needle biopsy</option>
+                                <option>Excision</option>
+                                <option>TURP</option>
+                                <option>Radical prostatectomy</option>
+                            </select>
+                        </div>
+                        <div class="field-row">
+                            <label>Primary Diagnosis</label>
+                            <input type="text" class="report-input" id="primaryDx"
+                                value="Invasive adenocarcinoma, prostate" />
+                        </div>
+                        <div class="field-row">
+                            <label>Histologic Grade</label>
+                            <select class="report-select" id="histoGrade">
+                                <option>Grade Group 1 (Gleason 3+3)</option>
+                                <option selected>Grade Group 2 (Gleason 3+4)</option>
+                                <option>Grade Group 3 (Gleason 4+3)</option>
+                                <option>Grade Group 4 (Gleason 4+4)</option>
+                                <option>Grade Group 5 (Gleason 4+5 / 5+5)</option>
+                            </select>
+                        </div>
+                        <div class="field-row">
+                            <label>Tumour Extent</label>
+                            <input type="text" class="report-input" id="tumourExtent"
+                                value="35% of biopsy core involved" />
+                        </div>
+                        <div class="field-row">
+                            <label>Perineural Invasion</label>
+                            <select class="report-select" id="pni">
+                                <option selected>Present</option>
+                                <option>Absent</option>
+                                <option>Cannot assess</option>
+                            </select>
+                        </div>
+                        <div class="field-row">
+                            <label>Lymphovascular Invasion</label>
+                            <select class="report-select" id="lvi">
+                                <option>Present</option>
+                                <option selected>Absent</option>
+                                <option>Cannot assess</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Narrative area -->
+                    <div class="report-section-header" style="margin-top:20px">
+                        Narrative / Dictation
+                        <button class="mic-btn" id="micBtn" title="Voice dictation (simulated)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
+                                <path d="M19 10v2a7 7 0 01-14 0v-2" />
+                                <line x1="12" y1="19" x2="12" y2="23" />
+                                <line x1="8" y1="23" x2="16" y2="23" />
+                            </svg>
+                        </button>
+                    </div>
+                    <textarea class="report-narrative" id="reportNarrative"
+                        placeholder="Begin narrative here...">Sections received labeled as right prostate biopsy. Sections show cores of prostate tissue with infiltrating malignant glands in a Gleason pattern 3+4 configuration. The glands are medium-sized with pale cytoplasm and amphophilic nuclei with prominent nucleoli. Approximately 35% of the submitted core is involved by carcinoma. Perineural invasion is identified. No lymphovascular invasion is seen. Intraductal carcinoma of the prostate (IDC-P) is suspected and correlation with FISH/IHC markers is recommended.</textarea>
+
+                    <div class="report-section-header" style="margin-top:20px">Addendum / Comments</div>
+                    <textarea class="report-narrative small" id="reportAddendum"
+                        placeholder="Optional addendum…"></textarea>
+                </div>
+
+                <!-- Bottom action bar -->
+                <div class="report-action-bar">
+                    <button class="action-bar-btn draft" id="btnSaveDraft">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                            <polyline points="17 21 17 13 7 13 7 21" />
+                            <polyline points="7 3 7 8 15 8" />
+                        </svg>
+                        Save Draft
+                    </button>
+                    <button class="action-bar-btn download" id="btnDownloadReport">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        Download Report
+                    </button>
+                    <button class="action-bar-btn lab-send" id="btnSendReportLab">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13" />
+                            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                        </svg>
+                        Send Report to Lab
+                    </button>
+                    <button class="action-bar-btn second" id="btnSecondOpinion">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 00-3-3.87" />
+                            <path d="M16 3.13a4 4 0 010 7.75" />
+                        </svg>
+                        Second Opinion
+                    </button>
+                    <button class="action-bar-btn signout" id="btnSignOut">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
+                        Final Sign-Out
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Evidence + AI + Lab Thread -->
+            <aside class="report-right">
+                <div class="rp-section-label">Evidence Gallery</div>
+                <div class="evidence-gallery" id="reportEvidenceGallery">
+                    <div class="gallery-empty">No evidence captured</div>
+                </div>
+
+                <div class="rp-section-label" style="margin-top:16px">AI Confidence Summary</div>
+                <div class="ai-confidence-box">
+                    <div class="conf-item">
+                        <div class="conf-label-row">
+                            <span>Adenocarcinoma G2</span>
+                            <span class="conf-pct accent">94%</span>
+                        </div>
+                        <div class="conf-bar-track">
+                            <div class="conf-bar-fill" style="width:94%"></div>
+                        </div>
+                    </div>
+                    <div class="conf-item">
+                        <div class="conf-label-row">
+                            <span>Gleason 3+4</span>
+                            <span class="conf-pct">81%</span>
+                        </div>
+                        <div class="conf-bar-track">
+                            <div class="conf-bar-fill" style="width:81%;background:var(--amber)"></div>
+                        </div>
+                    </div>
+                    <div class="conf-item">
+                        <div class="conf-label-row">
+                            <span>IDC-P</span>
+                            <span class="conf-pct muted">52%</span>
+                        </div>
+                        <div class="conf-bar-track">
+                            <div class="conf-bar-fill" style="width:52%;background:var(--text-muted)"></div>
+                        </div>
+                    </div>
+                    <p class="ai-disclaimer">AI assists. Pathologist signs.</p>
+                </div>
+
+                <div class="rp-section-label" style="margin-top:16px">Lab Communication Thread</div>
+                <div class="lab-thread-mini" id="reportLabThread">
+                    <div class="thread-item lab">
+                        <span class="thread-who">Lab</span>
+                        <span class="thread-msg">Specimen confirmed — Block A</span>
+                    </div>
+                    <div class="thread-item path">
+                        <span class="thread-who">Path</span>
+                        <span class="thread-msg">Request deeper section at level 3</span>
+                    </div>
+                    <div class="thread-item lab">
+                        <span class="thread-who">Lab</span>
+                        <span class="thread-msg">Processing — ETA 2 hrs</span>
+                    </div>
+                </div>
+                <button class="btn-ghost small" id="openLabFromReport">Open Full Comms</button>
+            </aside>
+
+        </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+     VIEW: LAB COMMUNICATION (Feature 6)
+══════════════════════════════════════ -->
+    <div class="view" id="viewLab">
+        <div class="lab-layout">
+
+            <!-- Thread -->
+            <div class="lab-main">
+                <div class="lab-header">
+                    <div>
+                        <h1 class="page-title">Lab Communication Thread</h1>
+                        <p class="page-sub">Case C-2041 · Closed Diagnostic Loop</p>
+                    </div>
+                    <div class="lab-header-right">
+                        <span class="priority-badge routine">ROUTINE</span>
+                    </div>
+                </div>
+
+                <div class="lab-timeline" id="labTimeline">
+                    <div class="timeline-item lab-msg" data-time="09:12">
+                        <div class="tl-avatar lab-av">LAB</div>
+                        <div class="tl-bubble">
+                            <div class="tl-header"><strong>Laboratory</strong><span class="tl-time">09:12</span></div>
+                            <p>Specimen confirmed — Block A received and accessioned.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item path-msg" data-time="09:45">
+                        <div class="tl-avatar path-av">PATH</div>
+                        <div class="tl-bubble">
+                            <div class="tl-header"><strong>Dr. R. Singh</strong><span class="tl-time">09:45</span></div>
+                            <p>Request deeper section — please cut to level 3. Also need immunohistochemistry for ERG
+                                and PIN4.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item lab-msg" data-time="10:03">
+                        <div class="tl-avatar lab-av">LAB</div>
+                        <div class="tl-bubble">
+                            <div class="tl-header"><strong>Laboratory</strong><span class="tl-time">10:03</span></div>
+                            <p>Processing — deeper section and IHC initiated. ETA 2 hours.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- New Message Composer -->
+                <div class="lab-composer">
+                    <div class="composer-header">New Message</div>
+
+                    <div class="composer-field">
+                        <label>Type</label>
+                        <div class="checkbox-group">
+                            <label class="cb-item"><input type="checkbox" id="cbMissing" /> Missing clinical
+                                info</label>
+                            <label class="cb-item"><input type="checkbox" id="cbStain" checked /> Additional stain
+                                request</label>
+                            <label class="cb-item"><input type="checkbox" id="cbQuality" /> Quality issue</label>
+                        </div>
+                    </div>
+
+                    <div class="composer-field">
+                        <label>Message</label>
+                        <textarea class="composer-textarea" id="composerText"
+                            placeholder="Type your message to the lab…" rows="3"></textarea>
+                    </div>
+
+                    <div class="composer-field">
+                        <label>Attach</label>
+                        <div class="attach-row">
+                            <button class="attach-btn" id="attachEvidence">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                                    <circle cx="12" cy="13" r="4" />
+                                </svg>
+                                Evidence Snapshot
+                            </button>
+                            <button class="attach-btn" id="attachAnnotation">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M12 20h9" />
+                                    <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+                                </svg>
+                                Annotation Overlay
+                            </button>
+                        </div>
+                        <div class="attach-previews" id="attachPreviews"></div>
+                    </div>
+
+                    <div class="composer-field">
+                        <label>Priority</label>
+                        <div class="priority-tab-group">
+                            <button class="priority-tab active" data-p="routine">Routine</button>
+                            <button class="priority-tab" data-p="urgent">Urgent</button>
+                        </div>
+                    </div>
+
+                    <button class="send-btn" id="sendToLab">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13" />
+                            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                        </svg>
+                        Send to Lab
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lab Right Panel -->
+            <aside class="lab-side">
+                <div class="rp-section-label">Case Info</div>
+                <div class="lab-case-info">
+                    <div class="lci-row"><span>Case ID</span><strong>C-2041</strong></div>
+                    <div class="lci-row"><span>Accession</span><strong>ACC-2026-0442</strong></div>
+                    <div class="lci-row"><span>Specimen</span><strong>Prostate Biopsy</strong></div>
+                    <div class="lci-row"><span>Lab Tech</span><strong>M. Okonkwo</strong></div>
+                    <div class="lci-row"><span>Pathologist</span><strong>Dr. R. Singh</strong></div>
+                    <div class="lci-row"><span>Status</span><strong class="status-active">In Progress</strong></div>
+                </div>
+
+                <div class="rp-section-label" style="margin-top:16px">Pending Requests</div>
+                <div class="pending-list">
+                    <div class="pending-item">
+                        <div class="pending-dot warn"></div>
+                        <div>
+                            <div class="pending-label">Deeper Section — Level 3</div>
+                            <div class="pending-sub">Requested 09:45 · Processing</div>
+                        </div>
+                    </div>
+                    <div class="pending-item">
+                        <div class="pending-dot warn"></div>
+                        <div>
+                            <div class="pending-label">IHC — ERG, PIN4</div>
+                            <div class="pending-sub">Requested 09:45 · Processing</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rp-section-label" style="margin-top:16px">Attached Snapshots</div>
+                <div class="lab-snapshots" id="labSnapshots">
+                    <div class="snap-empty">No snapshots attached</div>
+                </div>
+            </aside>
+
+        </div>
+    </div>
+
+    <!-- Sign-out confirmation modal -->
+    <div class="modal-overlay hidden" id="signoutModal">
+        <div class="modal-box">
+            <h2>Confirm Final Sign-Out</h2>
+            <p>You are about to electronically sign this pathology report. This action is permanent and legally binding.
+            </p>
+            <div class="modal-meta">
+                <div><strong>Pathologist:</strong> Dr. R. Singh</div>
+                <div><strong>Case:</strong> C-2041</div>
+                <div><strong>Date:</strong> <span id="signoutDate"></span></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-ghost" id="cancelSignout">Cancel</button>
+                <button class="btn-danger" id="confirmSignout">Sign &amp; Release</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="/static/js/viewer.js"></script>
+</body>
+
+</html>
