@@ -7,10 +7,12 @@ RUN apt-get update && apt-get install -y \
     libopenslide-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+# Look inside the folder for requirements
+COPY wsi-viewer/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Copy all the python code from inside the folder
+COPY wsi-viewer/ .
 
 EXPOSE 5050
 
