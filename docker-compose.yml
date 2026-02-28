@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  wsi-viewer:
+    build: .
+    ports:
+      - "80:5050"
+    volumes:
+      - ./uploads:/app/uploads
+    restart: always
